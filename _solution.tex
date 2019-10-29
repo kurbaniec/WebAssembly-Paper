@@ -1,0 +1,269 @@
+%!TEX root=../protocol.tex	% Optional
+% How can WebAssembly (compiled from Rust) in comparison to javascript improve performance in metrics like execution speed or file-size in web-based applications?
+
+\section{Introduction}
+Over the last years the usage of web-based application drastically increased \cite[cf.][]{stackoverflow:survey}. The success of \gls{node} marked a turning point in how to build modern applications and web-sites. Instead of developing different native programs for different targets like a Windows-based computer, one web-application is created and ported to different target systems. Frameworks like \gls{electron} or \gls{react:native} enforce this process.
+
+This ``write once, run anywhere'' approach seems like a logical next step to do. But it has one particular drawback: performance. Web-based applications are simple HTML-sites backed with a lot of JavaScript code for logic and more. And here lies the problem. JavaScript was never meant for this.
+
+JavaScript was developed in the 1990s to add interactivity to static web-pages.It was primarily aimed at designers for light \gls{dom}-manipulation and should co-exist with \gls{java:applet}s, which were planned to perform the business logic of the web-application. Java-Applets featured many fundamental design flaws, like requiring a plugin in the browser in order to work, that many programmers used JavaScript in their web-applications instead, because it just worked \cite{js:history, wasm:explanation, javaapplet:history}.
+
+For the last two decades JavaScript was the only reliable way to program on the web. Since 2015 the WebAssembly team, initiated by Luke Wagner at Mozilla and Ben Titzer at Google Munich, worked on creating a new low-level binary format to provide a faster alternative to JavaScript. In other words, a Java-Applet that works. In November 2017 \gls{mozilla} announced that WebAssembly is supported in all major browsers. \cite{wasm:revolution, wasm:support}.  
+
+\section{WebAssembly}
+
+\subsection{General}
+WebAssembly (abbreviated \textit{Wasm}) is not a typical programming language. It is primary a binary instruction format, it defines and specifies guidelines how compiled code should look like. The code itself is written mostly in a system-level programming languages like C++ or Rust (see next \hyperref[sec:rust]{section}) which is compiled to WebAssembly with the help of a \gls{llvm}-backend. The compiled WebAssembly output can be loaded by a browser that decodes and compiles it to native machine-code, which is later executed \cite{wasm:basics, wasm:howandwhy}.
+
+This approach helps WebAssembly to be \textit{efficient} and \textit{fast}, the main goals of the format. Efficiency is achieved by using an binary format. A binary file is always smaller than a textual file. This helps to keep file-size relatively small. A further benefit of the format is that parsing and optimisation is done while building the WebAssembly output. Therefore, when using WebAssembly in the browser no costly optimisation is needed to generate native high-performance machine code. The execution speed, the fast-aspect of WebAssembly, is mostly based on the used programming language and build system. WebAssembly compiled from C++ or Rust is way faster in solving algorithms than JavaScript in comparison. This is explainable by the stark differences in the design and concept of the languages. The \hyperref[sec:performance]{performance} section will go deeper into details later.
+
+
+\label{sec:rust}
+\subsection{Implementation with Rust}
+rust = mozilla => firefox => works great together // no coincidence
+wasm bindgen
+
+\label{sec:performance}
+\section{Performance}
+\subsection{Theoretical advantages}
+In comparison to JavaScript, WebAssembly needs no parsing and optimisation 
+\\\\
+WebAssembly is not garbage colleced. You have a bit of memory thats it.
+WebAssembly in Rust or C++ is not garbage collected => increase and consistency in performance
+\\\\
+Not as fast as native because interpreted, but still very close.
+\subsection{Benchmarks}
+fibonacci benchmark!
+
+\section{Conclusion}
+
+\subsection{Future Outlook}
+wasi?
+
+
+
+
+
+
+
+
+%%%
+\section{Konfiguration}
+\subsection{Optionen}
+\begin{tabularx}{\textwidth}{l X}
+{\small \verb|landscape|}    & Richte das Dokument vertikal aus.\\
+{\small \verb|minted|}       & Nutze das \texttt{minted} Paket zur Quelltextdarstellung.\\
+{\small \verb|natbib|}       & Nutze NatBib zur Literaturverwaltung.\\
+{\small \verb|nobib|}        & Deaktiviere die Literaturverwaltung.\\
+{\small \verb|nofonts|}      & Nutze die Standard \LaTeX ~Schriftarten.\\
+{\small \verb|noglo|}        & Deaktiviere Akronyme und das Glossar.\\
+{\small \verb|nologos|}      & Zeichne keine Logos auf der Titelseite.\\
+{\small \verb|notitle|}      & Zeichne keine Titelseite.\\
+{\small \verb|notoc|}        & Zeichne kein Inhaltsverzeichnis.\\
+{\small \verb|notable|}      & Zeichne keine Tabelle auf der Titelseite.
+\end{tabularx}
+
+\subsection{Variablen}
+Variablen werden über Kommandos gesetzt, die als Parameter den gewünschten Wert erhalten.
+\begin{center}
+    \ifminted   \codein{tex}{\myvariable{value}}
+    \else       \codein{tex}{\\myvariable\{value\}}\fi
+\end{center}
+
+\begin{tabular}{l l}
+\textbf{Kommando} & \textbf{Inhalt}\\
+
+{\small \verb|mysubtitle|} 	& Untertitel oder Zugehörigkeit\\
+{\small \verb|mysubject|} 	& Thema / Fach, welches bearbeitet wird\\
+{\small \verb|mycourse|} 	& Kurs / Klasse welche(r) besucht wird\\
+{\small \verb|myteacher|} 	& Betreuende Lehrkraft\\
+{\small \verb|myversion|} 	& Aktuelle Version des Dokuments\\
+{\small \verb|mybegin|} 	& Datum des Beginns\\
+{\small \verb|myfinish|} 	& Datum an dem die Arbeit beendet wurde
+\end{tabular}
+
+\newpage
+\section{Kommandos}\label{sec:Kommandos}
+\subsection{\texttt makefig}
+
+\begin{listing}
+\begin{code}{tex}
+\makefig{images/logo-right.png}{height=2cm}{
+    Mit Beschreibung und Label  % (Optional)
+}{
+    fig:caption-label           % (Optional)
+}
+\end{code}
+\caption{\texttt makefig}
+\label{lst:makefig}
+\end{listing}
+\makefig{images/logo-right.png}{height=2cm}{Mit Beschreibung und Label}{fig:caption-label}
+
+\subsection{\texttt vardef}
+\begin{listing}
+\begin{code}{tex}
+$$e^{i*\pi} = -1$$
+\end{code}
+
+$$e^{i*\pi} = -1$$
+
+\begin{code}[firstnumber=last]{tex}
+\begin{vardef}
+    \addvardef{$e$}{Eulersche Zahl}
+    \addvardef{$\pi$}{Kreiszahl}
+    \addvardef{$i$}{Imagin\"are Einheit}
+\end{vardef}
+\end{code}
+
+\begin{vardef}
+    \addvardef{$e$}{Eulersche Zahl}
+    \addvardef{$\pi$}{Kreiszahl}
+    \addvardef{$i$}{Imaginäre Einheit}
+\end{vardef}
+
+\caption{\texttt vardef}
+\label{lst:vardef}
+\end{listing}
+
+\newpage
+\section{Anwendung}\label{sec:Anwendung}
+Hier sollen die Schritte der Laborübung erläutert werden. Hier sind alle Fragestellungen der Lehrkraft zu beantworten. Etwaige Probleme bzw. Schwierigkeiten sollten ebenfalls hier angeführt werden.
+
+In diesem Fall werden einige \LaTeX-Elemente dokumentiert, welche bei der Kreation von Protokollen behilflich sein könnten.
+
+\subsection{Tabellen}
+\begin{table}[H]
+	\center
+	\begin{tabular}{| c | l |}
+		\hline Header 	& Kopf\\ \hline\hline
+		\textbf{Lorem} 	& Ipsum dolor sit amet, consetetur sadipscing elitr\\ \hline
+		\textbf{Ipsum} 	& At vero eos et accusam et justo duo dolores et ea rebum.\\
+						& Stet clita kasd gubergren, no sea takimata sanctus\\ \hline
+		\textbf{Dolor} 	& Consetetur sadipscing elitr, sed diam nonumy\\\hline
+	\end{tabular}
+	\caption{Tabular}
+	\label{tab:tabular}
+\end{table}
+
+\subsubsection{TabularX}
+TabularX erlaubt die Angabe der Größe der Tabelle und bietet zudem den Reihentyp \texttt{X}, der die verbleibende Größe neben anderen Reihen mit anderen \texttt{X} Reihen teilt.
+\\\\
+ACHTUNG: Die Verwendung von \verb|\codein|, \verb|\mintinline| oder \verb|\lstinline| ist in einer TabularX Umgebung nicht möglich!
+\begin{table}
+    \center
+    \begin{tabularx}{\textwidth}{| c | X |}
+        \hline Header 	& Kopf\\ \hline\hline
+        \textbf{Lorem} 	& Ipsum dolor sit amet, consetetur sadipscing elitr\\ \hline
+        \textbf{Ipsum} 	& At vero eos et accusam et justo duo dolores et ea rebum.\\
+            			& Stet clita kasd gubergren, no sea takimata sanctus\\ \hline
+        \textbf{Dolor} 	& Consetetur sadipscing elitr, sed diam nonumy\\\hline
+    \end{tabularx}
+    \caption{TabularX}
+    \label{tab:tabularx}
+\end{table}
+
+\newpage
+\subsection{Aufzählung}
+\begin{itemize}
+	\item Element einer Aufzählung
+	\begin{itemize}
+        \item Erstes eingerücktes Element einer Aufzählung
+        \item Zweites eingerücktes Element einer Aufzählung
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Outlines}
+\begin{outline}
+    \1 Element einer Aufzählung
+        \2 Erstes eingerücktes Element einer Aufzählung
+        \2 Zweites eingerücktes Element einer Aufzählung
+\end{outline}
+
+\subsection{Glossar}
+Zur Verwaltung des Glossars wird standardmäßig die Datei \texttt{glossaries.tex} verwendet, wobei sowohl Definitionen als auch Akronyme definiert werden können.
+\\\\
+Als Beispiel wurde ein Akronym für \gls{ac-syt} und eine Definition zu \gls{ac-syt} selbst hinzugefügt.
+
+\begin{listing}
+\inputcode{tex}{glossaries.tex}
+\caption{Glossareintrag}
+\label{lst:glossaries}
+\end{listing}
+~\\
+Im Dokument selbst kann ein Akronym mittels \verb|\gls{ac-syt}| verwendet werden. Beachte, dass ein Akronym welches bereits im Dokument verwendet wurde, bei der ersten Verwendung ausgeschrieben und danach immer gekürzt wird.
+\\\\
+Mit \verb|\gls{syt}| kann zum Beispiel eine Referenz zur Definition von \gls{syt} hinzugefügt werden.
+
+\subsection{Zitate}
+Zitate sollten gesammelt in der Datei \texttt{bib.bib} verwaltet werden.
+
+\newpage
+\subsection{Quelltext}
+\begin{listing}
+\ifminted   \mint{tex}|\begin{code}[]{java}|    % Escape \ for lstlistings
+\else       \lstinline[numbers=left, language=tex]$\begin{code}[]{java}$\fi
+\begin{code}[firstnumber=last]{java}
+// Ich bin ein Kommantar!
+public static void main(String[] args) {
+    System.out.println("Ich bin ein Array!")
+}
+\end{code}
+\ifminted   \mint[firstnumber=last]{tex}|\end{code}|    % Escape \ for lstlistings
+\else       \lstinline[firstnumber=last, numbers=left, language=tex]$\end{code}$\fi
+
+\caption{Java Code}
+\label{lst:java-code}
+\end{listing}
+~\\
+Die Darstellung von Quelltext im Text ist über das Kommando \verb|\codein[options]{lang}{code}| möglich.
+
+\subsubsection{Listings}
+\begin{listing}
+\ifminted   \mint{tex}|\begin{lstlisting}[language=Java, caption=Java Lstlisting]|
+\else       \lstinline[numbers=left, language=tex]$\begin{lstlisting}[language=Java, caption=Java Lstlisting]$\fi
+\begin{code}[firstnumber=last]{java}
+// Ich bin ein Kommantar!
+public static void main(String[] args) {
+    System.out.println("Ich bin ein Array!")
+}
+\end{code}
+\ifminted   \mint[firstnumber=last]{tex}|\end{lstlisting}|
+\else       \lstinline[firstnumber=last, numbers=left, language=tex]$\end{lstlisting}$\fi
+\caption{Java Lstlisting}
+\label{lst:java-lstlisting}
+\end{listing}
+
+\newpage
+\subsubsection{Minted}
+Benötigt die Option \texttt{minted}.
+\paragraph{Umgebung}~\\
+\begin{listing}
+\ifminted   \mint{tex}|\begin{minted}[options]{java}|
+\else       \lstinline[numbers=left, language=tex]$\begin{minted}[]{java}$\fi
+\begin{code}[firstnumber=last]{java}
+// Ich bin ein Kommantar!
+public static void main(String[] args) {
+    System.out.println("Ich bin ein Array!")
+}
+\end{code}
+\ifminted   \mint[firstnumber=last]{tex}|\end{minted}|
+\else       \lstinline[firstnumber=last, numbers=left, language=tex]$\end{minted}$\fi
+\caption{Minted Umgebung}
+\label{lst:minted-env}
+\end{listing}
+
+\paragraph{Zeile}~\\
+\begin{listing}
+\ifminted   \mint{tex}$\mint[options]{lang}|code|$
+\else       \lstinline[language=tex]$\mint[options]{lang}|code|$\fi
+\caption{Minted Einzeiler}
+\label{lst:minted-line}
+\end{listing}
+
+\begin{listing}
+\begin{code}{tex}
+\mintinline[options]{lang}{code}
+\end{code}
+\caption{Minted Inline}
+\label{lst:minted-inline}
+\end{listing}
