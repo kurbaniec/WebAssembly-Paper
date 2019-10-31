@@ -6,25 +6,151 @@ Over the last years the usage of web-based application drastically increased \ci
 
 This ``write once, run anywhere'' approach seems like a logical next step to do. But it has one particular drawback: performance. Web-based applications are simple HTML-sites backed with a lot of JavaScript code for logic and more. And here lies the problem. JavaScript was never meant for this.
 
-JavaScript was developed in the 1990s to add interactivity to static web-pages.It was primarily aimed at designers for light \gls{dom}-manipulation and should co-exist with \gls{java:applet}s, which were planned to perform the business logic of the web-application. Java-Applets featured many fundamental design flaws, like requiring a plugin in the browser in order to work, that many programmers used JavaScript in their web-applications instead, because it just worked \cite{js:history, wasm:explanation, javaapplet:history}.
+JavaScript was developed in the 1990s to add interactivity to static web-pages.It was primarily aimed at designers for light \gls{dom}-manipulation and should co-exist with \glspl{java:applet}, which were planned to perform the business logic of the web-application. Java-Applets featured many fundamental design flaws, like requiring a plugin in the browser in order to work, that many programmers used JavaScript in their web-applications instead, because it just worked \cite{js:history, wasm:explanation, javaapplet:history}.
 
 For the last two decades JavaScript was the only reliable way to program on the web. Since 2015 the WebAssembly team, initiated by Luke Wagner at Mozilla and Ben Titzer at Google Munich, worked on creating a new low-level binary format to provide a faster alternative to JavaScript. In other words, a Java-Applet that works. In November 2017 \gls{mozilla} announced that WebAssembly is supported in all major browsers. \cite{wasm:revolution, wasm:support}.  
 
 \section{WebAssembly}
 
 \subsection{General}
-WebAssembly (abbreviated \textit{Wasm}) is not a typical programming language. It is primary a binary instruction format, it defines and specifies guidelines how compiled code should look like. The code itself is written mostly in a system-level programming languages like C++ or Rust (see next \hyperref[sec:rust]{section}) which is compiled to WebAssembly with the help of a \gls{llvm}-backend. The compiled WebAssembly output can be loaded by a browser that decodes and compiles it to native machine-code, which is later executed \cite{wasm:basics, wasm:howandwhy}.
+WebAssembly (abbreviated \textit{Wasm}) is not a typical programming language. It is primary a binary instruction format, it defines and specifies guidelines how compiled code should look like. The code itself is written mostly in a system-level programming language like C++ or Rust (see next \hyperref[sec:rust]{section}) which is compiled to WebAssembly with the help of a \gls{llvm}-backend. The compiled WebAssembly output can be loaded by a browser that decodes and compiles it to native machine-code, which is later executed \cite{wasm:basics, wasm:howandwhy}.
 
-This approach helps WebAssembly to be \textit{efficient} and \textit{fast}, the main goals of the format. Efficiency is achieved by using an binary format. A binary file is always smaller than a textual file. This helps to keep file-size relatively small. A further benefit of the format is that parsing and optimisation is done while building the WebAssembly output. Therefore, when using WebAssembly in the browser no costly optimisation is needed to generate native high-performance machine code. The execution speed, the fast-aspect of WebAssembly, is mostly based on the used programming language and build system. WebAssembly compiled from C++ or Rust is way faster in solving algorithms than JavaScript in comparison. This is explainable by the stark differences in the design and concept of the languages. The \hyperref[sec:performance]{performance} section will go deeper into details later.
+This approach helps WebAssembly to be \textit{efficient} and \textit{fast}, the main goals of the format. Efficiency is achieved by using an binary format. A binary file is always smaller than a textual file. This helps to keep file-size relatively small. A further benefit of the format is that parsing and optimisation is done while building the WebAssembly output. Therefore, when using WebAssembly in the browser no costly optimisation is needed to generate native high-performance machine code. The execution speed, the fast-aspect of WebAssembly, is mostly based on the used programming language and build tools. WebAssembly compiled from C++ or Rust is way faster in solving algorithms than JavaScript in comparison. This is explainable by the stark differences in the design and concept of the languages. The \hyperref[sec:performance]{performance} section will go deeper into details later.
 
+\newpage
+
+Although WebAssembly is a binary format, it can be defined as a programming language because it features its own syntax and structure. Every WebAssembly binary output (\textit{wasm}) can be transcribed to a textual, assembly-like format called WebAssembly Text Format (\textit{wat}) and vice-versa. This means a WebAssembly program could be programmed without a typical programming language like C++, but instead with assembly code in the \textit{wat}-format. This however is not the recommended way. Writing code in assembly is much more time-demanding because of its syntax. This makes complex programs also harder to maintain. The intention of the \textit{wat}-format is to have a textual representation of the code, when viewing the loaded WebAssembly binary in the browser. This enables the ability of debugging. The textual representation can be used to set breakpoints for the debug-process, which would be impossible with binary code. It also makes sense for WebAssembly to feature an own textual format, in order to be independent from the used source language \cite{wasm:bringthewebtospeed}.
+
+The following demonstrates how an simple algorithm in C++ looks like when compiled to WebAssembly and transcribed to the textual representation:
+\begin{listing}
+\noindent
+\begin{minipage}[t]{0.49\textwidth}
+\begin{code}[]{c++}
+int factorial(int n) {
+  if (n == 0)
+    return 1;
+  else
+    return n * factorial(n-1);
+}
+\end{code}
+\end{minipage}
+\begin{minipage}[t]{0.24\textwidth}
+\begin{code}[]{lisp}
+20 00
+42 00
+51
+04 7e
+42 01
+05
+20 00
+20 00
+42 01
+7d
+10 00
+7e
+0b
+\end{code}
+\end{minipage}
+\begin{minipage}[t]{0.25\textwidth}
+\begin{code}[]{bash}
+get_local 0
+i64.const 0
+i64.eq
+if i64
+    i64.const 1
+else
+    get_local 0
+    get_local 0
+    i64.const 1
+    i64.sub
+    call 0
+    i64.mul
+end
+\end{code}
+\end{minipage}
+\caption{C++ source code - Wasm format - Wat format \cite{wasm:wat}}
+\label{lst:wasm-code}
+\end{listing}
+
+The binary output is not human readable. Therefore the \textit{wat}-format exist. It features similarities to Assembler, but it has distinct differences. WebAssembly is executed in a \gls{stackmachine} virtual machine in the browser. The design of the language reflects this usage. Reading the \textit{wat}-format is not that difficult, if known what to look for. The general concept is very simple. Every new value is pushed to a stack. When performing operation, the latest value or values are used and consumed, thereby creating a new value. 
+
+The next listing is included as a guide to help with reading and understanding the \textit{wat}-format.
+
+
+\begin{listing}
+\hspace{1cm} Code \hspace{3cm} Stack \hspace{4cm} Explanation \vspace{-0.5cm} \\\\
+\noindent\rule{\textwidth}{0.6pt} \vspace{-0.5cm}
+\begin{code}[]{bash}
+get_local 0      #   |            | A            # Push first parameter         
+i64.const 0      #   | B          | A            # Push constant with value 0
+i64.eq           #   |            | eq(B,A)      # Call equals with latest 2 values
+if i64           #   |            | eq(B,A)      # If latest 2 values are equal
+    i64.const 1  #   |            | C            # Push constant with value 1
+else             #   |            | eq(B,A)      # If latest 2 values are not equal
+    get_local 0  #   |            | A            # Push first parameter
+    get_local 0  #   | B          | A            # Push first parameter
+    i64.const 1  # C | B          | A            # Push constant with value 1
+    i64.sub      #   | B-C        | A            # Subtract the latest 2 values
+    call 0       #   | func0(B-C) | A            # Call itself with latest value
+    i64.mul      #   |            | func0(B-C)*A # Multiply the latest 2 values
+end              #   |            |              # Return latest value
+\end{code}
+\caption{Reading Wat}
+\label{lst:wat-code}
+\end{listing}
 
 \label{sec:rust}
-\subsection{Implementation with Rust}
-rust = mozilla => firefox => works great together // no coincidence
-wasm bindgen
+\subsection{Working with Rust}
+The concept and basics of WebAssembly were covered in the previous section. Now it is time to look at how to properly write source code for WebAssembly. As mentioned earlier WebAssembly relies not on a single programming language, instead any programming languages with support can be used.
+This work specialises on the programming language \textit{Rust} to give greater insight into the topic. 
+
+Rust was chosen because its one of the languages that fits perfectly into the concept of WebAssembly. This is no coincidence. WebAssembly features no built-in garbage collector, this is a problem for languages like Java or Go, that rely on it, but not for system-languages like Rust or C++. One of the benefits of Rust over C++ is its sophisticated compiler. The Rust compiler detects common errors like dangling \glspl{pointer} (pointers that do not point on valid objects) while compiling and aborts the process if such problems are detected. The C++ compiler is not capable of this. This overall means that a successfully compiled WebAssembly program from Rust is less likely to have basic errors. This is very helpful because debugging is not that easy with WebAssembly and for now only supported in the WebAssembly Text Format.
+
+Another advantage of Rust is its support. Rust is strongly community-driven, but it is also backed by the organisation behind the initial WebAssembly proposal and the Firefox web browser: Mozilla. With the resources and knowledge of Mozilla, Rust has the best chances to become a prominent language of the web with the help of WebAssembly \cite{rust:intro}.
+
+The Rust WebAssembly project, called \textit{rust-wasm}, is divided in many sub-projects that are used together to make Rust fit for WebAssembly. The most important ones are \textit{wasm-pack} and \textit{wasm-bindgen} \cite{rust:wasm}.
+
+\newpage
+
+\textit{Wasm-pack} is used to compile Rust code to WebAssembly. It uses \textit{wasm-bindgen} to generate a JavaScript file that is needed to call functions from WebAssembly. This all is wrapped up in a directory, in default called \textit{pkg}, that can be used in a NodeJS project as a \gls{nodemodule}. For starters it is recommended to use the \textit{ \href{https://github.com/rustwasm/wasm-pack-template}{wasm-pack-template}} which is a minimal, pre-configured project best suited for starting to work with Rust and WebAssembly in NodeJS.
+
+\textit{Wasm-bindgen} is used to create a bridge between WebAssembly and JavaScript. This is needed at the moment because there is no way to call WebAssembly functions directly from HTML. Therefore, JavaScript is needed as ``glue-code'' to make WebAssembly work. This is somewhat a design choice from the WebAssembly team that positions WebAssembly as an addition to JavaScript especially where high-performance is needed. Wasm-bindgen also allows to import JavaScript functions to WebAssembly which makes it possible to use them like native functions in the source code. The following example imports the \textit{alert}-functions from JavaScript and exports a custom \textit{alert}-function called \textit{greet} from the WebAssembly module.
+\begin{listing}
+\begin{code}[]{rust}
+use wasm_bindgen::prelude::*;
+
+// Import the `window.alert` function from the Web.
+#[wasm_bindgen]
+extern "C" {
+    fn alert(s: &str);
+}
+
+// Export a `greet` function from Rust to JavaScript, that alerts a
+// hello message.
+#[wasm_bindgen]
+pub fn greet(name: &str) {
+    alert(&format!("Hello, {}!", name));
+}  
+\end{code}
+\caption{Rust source-code for WebAssembly \cite{rust:wasmbindgen}}
+\label{lst:rust-wasm-bindgen}
+\end{listing}
+The through \textit{wasm-pack} compiled and packaged WebAssembly program can be then imported like a Node Module in a NodeJS project and called like a normal function.
+\begin{listing}
+\begin{code}[]{javascript}
+import { greet } from "./wasm_module_pkg";
+
+greet("World!");
+\end{code}
+\caption{Calling the WebAssembly module through JavaScript \cite{rust:wasmbindgen}}
+\label{lst:js-wasm-bindgen}
+\end{listing}
+
+\newpage
 
 \label{sec:performance}
 \section{Performance}
+Most important part, how to improve web-based applications
 \subsection{Theoretical advantages}
 In comparison to JavaScript, WebAssembly needs no parsing and optimisation 
 \\\\
@@ -32,8 +158,18 @@ WebAssembly is not garbage colleced. You have a bit of memory thats it.
 WebAssembly in Rust or C++ is not garbage collected => increase and consistency in performance
 \\\\
 Not as fast as native because interpreted, but still very close.
+\\\\
+why has wasm initially a larger file size? It needs memory management. wee\_alloc \cite{wasm:allocator}
+\\\\
+Compare loop vs single resulsts
+\\\\
+
 \subsection{Benchmarks}
 fibonacci benchmark!
+
+threads with webworker!
+
+also compare native rust!
 
 \section{Conclusion}
 
@@ -179,17 +315,6 @@ ACHTUNG: Die Verwendung von \verb|\codein|, \verb|\mintinline| oder \verb|\lstin
         \2 Zweites eingerücktes Element einer Aufzählung
 \end{outline}
 
-\subsection{Glossar}
-Zur Verwaltung des Glossars wird standardmäßig die Datei \texttt{glossaries.tex} verwendet, wobei sowohl Definitionen als auch Akronyme definiert werden können.
-\\\\
-Als Beispiel wurde ein Akronym für \gls{ac-syt} und eine Definition zu \gls{ac-syt} selbst hinzugefügt.
-
-\begin{listing}
-\inputcode{tex}{glossaries.tex}
-\caption{Glossareintrag}
-\label{lst:glossaries}
-\end{listing}
-~\\
 Im Dokument selbst kann ein Akronym mittels \verb|\gls{ac-syt}| verwendet werden. Beachte, dass ein Akronym welches bereits im Dokument verwendet wurde, bei der ersten Verwendung ausgeschrieben und danach immer gekürzt wird.
 \\\\
 Mit \verb|\gls{syt}| kann zum Beispiel eine Referenz zur Definition von \gls{syt} hinzugefügt werden.

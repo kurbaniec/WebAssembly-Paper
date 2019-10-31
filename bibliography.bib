@@ -3,13 +3,13 @@
 	author = {Wikipedia Autoren},
 	url = {https://de.wikipedia.org/wiki/Systemtechnik},
 	organization = {Wikipedia},
-	note = {29.10.2019}
+	note = {Online. Accessed 29.10.2019}
 }
 
 @online{ stackoverflow:survey,
     title={Stack Overflow Developer Survey 2019}, url={https://insights.stackoverflow.com/survey/2019#most-popular-technologies}, 
     organization = {Stack Overflow},
-	note = {29.10.2019}
+	note = {Online. Accessed 29.10.2019}
 }
 
 @online{ js:history,
@@ -18,7 +18,7 @@
     url={https://auth0.com/blog/a-brief-history-of-javascript/}, 
     organization = {Auth0},
     year={2017},
-	note = {29.10.2019}
+	note = {Online. Accessed 29.10.2019}
 }
 
 @online{ javaapplet:history,
@@ -26,14 +26,21 @@
     url={https://softwareengineering.stackexchange.com/q/21843}, 
     organization = {StackExchange},
     year={2010},
-	note = {29.10.2019}
+	note = {Online. Accessed 29.10.2019}
 }
 
 @online{ wasm:basics,
     title={WebAssembly - Overview},
     url={https://webassembly.org/}, 
     organization = {Mozilla Corporation, W3C Community Group, W3C Working Group},
-	note = {29.10.2019}
+	note = {Online. Accessed 29.10.2019}
+}
+
+@online{ wasm:wat,
+    title={WebAssembly - Text Format},
+    url={https://webassembly.org/docs/text-format/}, 
+    organization = {Mozilla Corporation, W3C Community Group, W3C Working Group},
+	note = {Online. Accessed 30.10.2019}
 }
 
 @online{ wasm:support,
@@ -41,7 +48,7 @@
     url={https://blog.mozilla.org/blog/2017/11/13/webassembly-in-browsers/}, 
     year={2017},
     organization = {Mozilla Corporation},
-	note = {29.10.2019}
+	note = {Online. Accessed 29.10.2019}
 }
 
 @online{ wasm:build,
@@ -49,7 +56,7 @@
     author={Alon Zakai},
     url={https://kripken.github.io/blog/binaryen/2018/04/18/rust-emscripten.html}, 
     year={2018},
-	note = {29.10.2019}
+	note = {Online. Accessed 29.10.2019}
 }
 
 @online{ wasm:performance,
@@ -57,7 +64,15 @@
     author={Vladimir},
     url={https://blog.sqreen.com/webassembly-performance/}, 
     year={2018},
-	note = {29.10.2019}
+	note = {Online. Accessed 29.10.2019}
+}
+
+@online{ wasm:allocator,
+    title={A Wee Allocator for WebAssembly},
+    author={Nick Fitzgerald},
+    url={https://fitzgeraldnick.com/2018/02/09/wee-alloc.html}, 
+    year={2018},
+	note = {Online. Accessed 30.10.2019}
 }
 
 
@@ -86,9 +101,23 @@
     journal = {LogRocket.com},
     year = {2018},
     title = {WebAssembly: How and why},
-    language = {eng},
     author = {Milica Mihajlija},
-    url = {https://blog.logrocket.com/webassembly-how-and-why-559b7f96cd71/}
+    url = {https://blog.logrocket.com/webassembly-how-and-why-559b7f96cd71/},
+    note = {Online. Accessed 29.10.2019}
+}
+
+@online{ rust:wasm,
+    title = {The Rust and WebAssembly Book},
+    author = {Rust-Wasm Working Group},
+    url = {https://rustwasm.github.io/docs/book/},
+    note = {Online. Accessed 31.10.2019}
+}
+
+@online{ rust:wasmbindgen,
+    title = {wasm-bindgen},
+    author = {Rust-Wasm Working Group},
+    url = {https://github.com/rustwasm/wasm-bindgen},
+    note = {Online. Accessed 31.10.2019}
 }
 
 
@@ -115,5 +144,44 @@ url = {http://search.proquest.com/docview/2081195409/},
     title = {What is LLVM? The power behind Swift, Rust, Clang, and more},
     language = {eng},
     author = {Yegulalp, Serdar},
-    url = {https://www.infoworld.com/article/3247799/what-is-llvm-the-power-behind-swift-rust-clang-and-more.html}
+    url = {https://www.infoworld.com/article/3247799/what-is-llvm-the-power-behind-swift-rust-clang-and-more.html},
+    note={Online. Accessed 29.10.2019}
+}
+
+@misc{ wiki:stackmachine,
+    author = "{Wikipedia contributors}",
+    title = "Stack machine --- {Wikipedia}{,} The Free Encyclopedia",
+    year = "2019",
+    url = "https://en.wikipedia.org/w/index.php?title=Stack_machine&oldid=922317559",
+    note = "Online. Accessed 30.10.2019"
+ }
+ 
+ @article{wasm:bringthewebtospeed,
+ author = {Rossberg, Andreas and Titzer, Ben L. and Haas, Andreas and Schuff, Derek L. and Gohman, Dan and Wagner, Luke and Zakai, Alon and Bastien, J. F. and Holman, Michael},
+ title = {Bringing the Web Up to Speed with WebAssembly},
+ journal = {Commun. ACM},
+ issue_date = {December 2018},
+ volume = {61},
+ number = {12},
+ month = nov,
+ year = {2018},
+ issn = {0001-0782},
+ pages = {107--115},
+ numpages = {9},
+ url = {http://doi.acm.org/10.1145/3282510},
+ doi = {10.1145/3282510},
+ acmid = {3282510},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+} 
+
+@article{rust:intro,
+author = {Krill, Paul},
+title = {Rust and JavaScript interoperability coming via WebAssembly},
+address = {San Mateo},
+journal = { InfoWorld.com},
+year={2018},
+abstract = {Developers can call JavaScript methods on a struct and access properties, providing a native feel to Rust code once annotations are connected. * Export of Rust structures and functions to JavaScript. The company does not expect Rust WebAssembly apps to be completely written in Rust; instead, the bulk of application code would still be in JavaScript.},
+keywords = {Language ; Java (Programming Language) ; Interoperability ; Interoperability},
+url={https://search.proquest.com/docview/2023236896}
 }
