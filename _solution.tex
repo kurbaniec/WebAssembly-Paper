@@ -101,7 +101,7 @@ end              #   |            |              # Return latest value
 
 \label{sec:rust}
 \subsection{Working with Rust}
-The concept and basics of WebAssembly were covered in the previous section. Now it is time to look at how to properly write source code for WebAssembly. As mentioned earlier WebAssembly relies not on a single programming language, instead any programming languages with support can be used.
+The concept and basics of WebAssembly were covered in the previous section. As mentioned earlier WebAssembly relies not on a single programming language, instead any programming languages with support can be used.
 This work specialises on the programming language \textit{Rust} to give greater insight into the topic. 
 
 Rust was chosen because its one of the languages that fits perfectly into the concept of WebAssembly. This is no coincidence. WebAssembly features no built-in garbage collector, this is a problem for languages like Java or Go, that rely on it, but not for system-languages like Rust or C++. One of the benefits of Rust over C++ is its sophisticated compiler. The Rust compiler detects common errors like dangling \glspl{pointer} (pointers that do not point on valid objects) while compiling and aborts the process if such problems are detected. The C++ compiler is not capable of this. This overall means that a successfully compiled WebAssembly program from Rust is less likely to have basic errors. This is very helpful because debugging is not that easy with WebAssembly and for now only supported in the WebAssembly Text Format.
@@ -142,7 +142,7 @@ import { greet } from "./wasm_module_pkg";
 
 greet("World!");
 \end{code}
-\caption{Calling the WebAssembly module through JavaScript \cite{rust:wasmbindgen}}
+\caption{Calling a WebAssembly function through JavaScript \cite{rust:wasmbindgen}}
 \label{lst:js-wasm-bindgen}
 \end{listing}
 
@@ -150,20 +150,39 @@ greet("World!");
 
 \label{sec:performance}
 \section{Performance}
-Most important part, how to improve web-based applications
+This section describes how WebAssembly can be used to speed up web-applications and what performance gains one can expect.
 \subsection{Theoretical advantages}
-In comparison to JavaScript, WebAssembly needs no parsing and optimisation 
-\\\\
-WebAssembly is not garbage colleced. You have a bit of memory thats it.
-WebAssembly in Rust or C++ is not garbage collected => increase and consistency in performance
-\\\\
-Not as fast as native because interpreted, but still very close.
-\\\\
+First, the question needs to be asked what advantages WebAssembly has as a format in in terms of execution speed compared to JavaScript. Note, this sections assumes that a system-level programming language like Rust is used as a basis for the WebAssembly module.
 
-Compare loop vs single resulsts
-\\\\
+The process of creating executable code out of JavaScript source code is quite long. The plain text needs to be parsed first into a data structure called ``abstract syntax tree''. Then the JavaScript engine can compile the data structure into machine code. While compiling, the engine has also the important task of optimising the written code. This means that the ``quality'' of the compiled code is strongly depended on the JavaScript engine of the browser. Better optimised code is tied to longer compilation times that want to be short as possible. WebAssembly eliminates the steps of parsing and optimisation when loaded by the browser engine. A WebAssembly module is already pre-compiled and optimised before used in the browser. The engine only needs to decode the WebAssembly module and compile the binary format to the corresponding target system. This last compilation step of WebAssembly requires no optimisation, its just a porting process \cite{wasm:howandwhy}. 
 
-\subsection{Benchmarks}
+JavaScript relies on a garbage collector for memory management. That means that a process inspects what memory areas are used and which ones are unused and frees them if so. This helps to eliminate memory inconsistencies and also takes the responsibility of writing manual memory operations in the code from the programmer. This however has the drawback that a heavy-weighted process for the garbage collector is needed to be executed in the browser engine all the time. It also makes the general execution speed of a program unpredictable because the garbage collector can always perform an operation in the midst of program call. In comparison WebAssembly relies on a single linear memory. Memory management is tied to the written code, not an automated garbage collector. Rust for example still needs its own memory allocator shipped in WebAssembly, but this is needed for memory management of the linear memory WebAssembly features and is not related to a garbage collector. WebAssembly with its manual memory management can therefore be faster and much more reliable than JavaScript. But this is only true, if the manual memory management is cleanly implemented. Rust as a language helps to make memory management safer through concepts like \gls{rust:ownership} that translate well to WebAssembly. 
+
+\subsection{Practical Benchmarks}
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    title={Fibonacci Benchmark},
+    height=8cm, width=15.5cm,
+    bar width=0.6cm,
+    enlargelimits=0.15,
+    legend style={at={(0.5,-0.15)},
+      anchor=north,legend columns=-1},
+    ylabel={execution time in ms},
+    symbolic x coords={Rust,Wasm (Chrome),Wasm (Firefox), JS (Chrome), JS (Firefox)},
+    xtick=data,
+    nodes near coords,
+    nodes near coords align={vertical},
+    ]
+\addplot coordinates {(Rust,2.1) (Wasm (Chrome),4.4) (Wasm (Firefox),4.7) (JS (Chrome),9.4) (JS (Firefox), 11.9)};
+\addplot coordinates {(Rust,2.6) (Wasm (Chrome),4.7) (Wasm (Firefox),6.0) (JS (Chrome),17.3) (JS (Firefox),15.0)};
+\addplot coordinates {(Rust,1.9) (Wasm (Chrome),4.2) (Wasm (Firefox),4.0) (JS (Chrome),8.0) (JS (Firefox), 11.0)};
+\legend{Average,Maximum,Minimum}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
 fibonacci benchmark!
 
 why has wasm initially a larger file size? It needs memory management. wee\_alloc. But there is gzip!! \cite{wasm:allocator, rust:wasmfilesize}

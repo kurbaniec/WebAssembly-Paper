@@ -1,4 +1,4 @@
-# How can WebAssembly improve performance in web-based application?
+# How can WebAssembly improve performance in web-based applications?
 
 ### Read [here](https://www.overleaf.com/read/dxfknnzqkgrp)
 
