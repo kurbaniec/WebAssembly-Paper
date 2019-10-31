@@ -1,7 +1,9 @@
-# Fibonacci Benchmark - JavaScript
+# Fibonacci Benchmark - WebAssembly
 
 ## Run benchmark
 ```
+wasm-pack build --release --no-typescript
+cd www
 npm install
 npm run start
 ```
@@ -13,6 +15,7 @@ Go to http://localhost:8080 and click the `start` button.
 
 31.10.2019 - Firefox Browser (Version 70)
 ![Benchmark](benchmark_firefox.PNG)
+
+
 ## Sources:
 * [Project basis](https://github.com/rustwasm/wasm-pack-template)
-* [Operations on arrays](https://codeburst.io/javascript-arrays-finding-the-minimum-maximum-sum-average-values-f02f1b0ce332)
