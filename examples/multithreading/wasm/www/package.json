@@ -1,7 +1,7 @@
 {
-  "name": "fibonacci_benchmark_wasm",
+  "name": "file_benchmark_wasm",
   "version": "0.1.0",
-  "description": "Simple fibonacci benchmark in js",
+  "description": "Example usage of webworkers with Wasm for file transformation",
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.config.js",
@@ -10,7 +10,6 @@
   "author": "Kacper Urbaniec <at.kacper.urbaniec@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "wasm-fib": "file:../pkg",
     "webpack": "^4.29.3",
     "webpack-cli": "^3.1.0",
     "webpack-dev-server": "^3.1.5",

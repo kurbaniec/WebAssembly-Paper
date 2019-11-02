@@ -1,5 +1,5 @@
 [package]
-name = "fibonacci_benchmark_wasm"
+name = "file_benchmark_wasm"
 version = "0.1.0"
 authors = ["Kacper Urbaniec <at.kacper.urbaniec@gmail.com>"]
 edition = "2018"

@@ -1,4 +1,4 @@
-# Fibonacci Benchmark - WebAssembly
+# Multi-threaded File-Manipulation Benchmark - WebAssembly
 
 ## Run benchmark
 ```

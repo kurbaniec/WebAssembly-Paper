@@ -9,10 +9,7 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-pub fn fibonacci(n: u32) -> u32 {
-    match n {
-        0 => 1,
-        1 => 1,
-        _ => fibonacci(n - 1) + fibonacci(n - 2),
-    }
+pub fn reverse(input: String) -> String {
+    input.chars().rev().collect::<String>()
+        .replace("Hamlet", "Homer").replace("HAMLET", "HOMER")
 }
