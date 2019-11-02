@@ -1,7 +1,7 @@
 {
-  "name": "file_benchmark_js",
+  "name": "markdown_benchmark_js",
   "version": "0.1.0",
-  "description": "Example usage of webworkers for file transformation",
+  "description": "Example usage of webworkers for markdown parsing",
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.config.js",

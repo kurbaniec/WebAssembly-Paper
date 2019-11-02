@@ -1,4 +1,4 @@
-# Multi-threaded File-Manipulation Benchmark - WebAssembly
+# Multi-threaded Markdown-Parsing Benchmark - WebAssembly
 
 ## Run benchmark
 ```
@@ -21,3 +21,5 @@ Go to http://localhost:8080 and click the `start` button.
 
 ## Sources:
 * [Project basis](https://github.com/rustwasm/wasm-pack-template)
+* [Comrak Markdown-Parser](https://github.com/kivikakk/comrak)
+* [Used Markdown File for testing](https://daringfireball.net/projects/markdown/syntax.text)

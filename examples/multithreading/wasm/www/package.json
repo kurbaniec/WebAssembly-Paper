@@ -1,7 +1,7 @@
 {
-  "name": "file_benchmark_wasm",
+  "name": "markdown_benchmark_wasm",
   "version": "0.1.0",
-  "description": "Example usage of webworkers with Wasm for file transformation",
+  "description": "Example usage of webworkers with wasm for markdown parsing",
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.config.js",
