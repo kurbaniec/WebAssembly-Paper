@@ -334,7 +334,7 @@ window.Whammy = (function(){
             var buffer = toFlatArray(ebml)
             return new Uint8Array(buffer);
         }else{
-            return new Blob(ebml, {type: "video/webm"});
+            return new Blob(ebml, {type: "resources/webm"});
         }
     }
 
