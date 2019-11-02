@@ -1,7 +1,7 @@
 {
-  "name": "fibonacci_benchmark_js",
+  "name": "file_benchmark_js",
   "version": "0.1.0",
-  "description": "Simple fibonacci benchmark in js",
+  "description": "Example usage of webworkers for file transformation",
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.config.js",
