@@ -1,22 +1,37 @@
 use std::time::{Instant};
 use std::f64::INFINITY;
-
-fn fibonacci(n: u32) -> u32 {
-    match n {
-        0 => 1,
-        1 => 1,
-        _ => fibonacci(n - 1) + fibonacci(n - 2),
-    }
-}
+use comrak::{markdown_to_html, ComrakOptions};
+use std::{thread, fs};
+use std::sync::{Arc, Mutex};
 
 fn main() {
-    println!("Fibonacci (30th number) Benchmark:");
+    println!("Multi-threaded Markdown-Parsing Benchmark:");
     let mut times = Vec::new();
-    for i in 0..10 {
+    for _ in 0..10 {
         let now = Instant::now();
-        let number = fibonacci(30);
+        let mut workers = vec![];
+        let file = Arc::new(Mutex::new(
+            vec![String::new(), String::new(), String::new()]
+        ));
+        for i in 0..3 {
+            let tmp = Arc::clone(&file);
+            workers.push(thread::spawn(move || {
+                let text = fs::read_to_string(
+                    &format!("resources/md_test{}.md", i)
+                ).unwrap();
+                let mut options = ComrakOptions::default();
+                options.unsafe_ = true;
+                let mut file = tmp.lock().unwrap();
+                file[i] = markdown_to_html(&text, &options);
+            }));
+        }
+        for worker in workers {
+            let _ = worker.join();
+
+        }
+        let html: String = file.lock().unwrap().join("");
         times.push(now.elapsed().as_nanos() as f64 / 1_000_000.0);
-        println!("Run {}, number is {}", i, number);
+        let _ = fs::write("output.md", &html);
     }
     println!("{:?}", times);
     let avg: f64 = times.iter().sum::<f64>() / times.len() as f64;
