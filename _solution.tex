@@ -158,13 +158,50 @@ The process of creating executable code out of JavaScript source code is quite l
 
 JavaScript relies on a garbage collector for memory management. That means that a process inspects what memory areas are used and which ones are unused and frees them if so. This helps to eliminate memory inconsistencies and also takes the responsibility of writing manual memory operations in the code from the programmer. This however has the drawback that a heavy-weighted process for the garbage collector is needed to be executed in the browser engine all the time. It also makes the general execution speed of a program unpredictable because the garbage collector can always perform an operation in the midst of program call. In comparison WebAssembly relies on a single linear memory. Memory management is tied to the written code, not an automated garbage collector. Rust for example still needs its own memory allocator shipped in WebAssembly, but this is needed for memory management of the linear memory WebAssembly features and is not related to a garbage collector. WebAssembly with its manual memory management can therefore be faster and much more reliable than JavaScript. But this is only true, if the manual memory management is cleanly implemented. Rust as a language helps to make memory management safer through concepts like \gls{rust:ownership} that translate well to WebAssembly. 
 
+\newpage
+
 \subsection{Practical Benchmarks}
+To enforce full transparency, all programs used for testing can be found here: \url{https://github.com/kurbaniec-tgm/WebAssembly-Paper}.
+
+\subsubsection{Fibonacci}
+The first benchmark portrays a heavy computational use-case. In short, the 30th number of the Fibonacci sequence is determined. For referenence, the Fibonacci number is the sum of the two preceding numbers: $F_n = F_{n-1} + F_{n-2}$.
+
+The following shows the algorithms determining the Fibonacci number. On the left the implementation for Rust and WebAssembly is displayed, on the right the JavaScript version.
+
+\begin{listing}
+\noindent
+\begin{minipage}[t]{0.57\textwidth}
+\begin{code}[]{rust}
+fn fibonacci(n: u32) -> u32 {
+    match n {
+        0 => 1,
+        1 => 1,
+        _ => fibonacci(n - 1) + fibonacci(n - 2),
+    }
+}
+\end{code}
+\end{minipage}
+\begin{minipage}[t]{0.4\textwidth}
+\begin{code}[]{javascript}
+function fibonacci(num) {
+    if (num <= 1) return 1;
+    return fibonacci(num - 1) + fibonacci(num - 2);
+}
+\end{code}
+\end{minipage}
+\caption{Fibonacci source code - Rust/Wasm - JS \cite{wasm:wat}}
+\label{lst:wasm-code}
+\end{listing}
+
+\vspace{-0.2cm}
+For testing, every algorithm was executed ten times per run. The Rust version was tested with Rust Nightly on a Windows 10 based machine. The WebAssembly and JavaScript versions were tested on the same machine in the Chrome- and Firefox-browser.
+
+\begin{listing}
 \begin{center}
 \begin{tikzpicture}
 \begin{axis}[
     ybar,
-    title={Fibonacci Benchmark},
-    height=8cm, width=15.5cm,
+    height=8cm, width=14.5cm,
     bar width=0.6cm,
     enlargelimits=0.15,
     legend style={at={(0.5,-0.15)},
@@ -182,193 +219,117 @@ JavaScript relies on a garbage collector for memory management. That means that 
 \end{axis}
 \end{tikzpicture}
 \end{center}
+\caption{Fibonacci Benchmark}
+\label{lst:fibonacci-benchmark}
+\end{listing}
 
-fibonacci benchmark!
+The results show expected behaviour. The Rust implementation is more than double as fast as the WebAssembly one. This is understandable because the Rust version runs on the local and WebAssembly runs in a virtual stack-machine in the browser powered by the local machine. But the important part is that the WebAssembly version is more than double as fast as the JavaScript version. Both versions run in virtual machines in the browser, but WebAssembly as a format is way more efficient to be consumed and executed by the browser engine than JavaScript. What also is visible is the consistent performance of WebAssembly in comparison to JavaScript. This can by explained with interference from JavaScript's garbage collector.  
 
-why has wasm initially a larger file size? It needs memory management. wee\_alloc. But there is gzip!! \cite{wasm:allocator, rust:wasmfilesize}
+WebAssembly as a binary format should be smaller than a JavaScript file in theory. The sole Fibonacci algorithm in JavaScript is a 117 Bytes large file. In comparison, the WebAssembly output is 862 Bytes. The executable Rust output is the largest with 3.37 Megabytes.
 
-threads with webworker!
+\begin{listing}
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    ymin=0,
+    ymax=3400000,
+    ybar,
+    height=8cm, width=14.5cm,
+    bar width=0.6cm,
+    enlargelimits=0.15,
+    legend style={at={(0.5,-0.15)},
+      anchor=north,legend columns=-1},
+    ylabel={file-size in bytes},
+    symbolic x coords={Rust,Rust gzip,Wasm,Wasm gzip, JS,JS gzip},
+    xtick=data,
+    nodes near coords,
+    nodes near coords align={vertical},
+    ]
+\addplot coordinates {(Rust,3373261) (Rust gzip,1005336) (Wasm,862) (Wasm gzip,337) (JS,117) (JS gzip,95)};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\caption{Fibonacci file-size}
+\label{lst:fibonacci-filesize}
+\end{listing}
 
-also compare native rust!
+This stark differences can be explained by the fact that is is not a true one-to-one comparison. The JavaScript file features only the algorithm with no additional code. The WebAssembly module features the algorithm with needed additions like a memory allocator (examples use the smallest one possible called \textit{wee\_alloc}) that are needed for execution. The Rust executable features the algorithm, the main-test program and full bindings for the targeted host machine. Also, a fully fledged memory allocator is included. But most of the time resources are shared compressed over the internet. With the compress utility \textit{gzip} we can determine how large the files are when transferred efficiently. WebAssembly's binary format is perfect for compression, we can reduce the size to one third of the original one. JavaScript's textual files do not benefit greatly from compression and are only reduced slightly. Therefore, it can be expected that a long algorithm or algorithms will probably be smaller in WebAssembly than JavaScript. The overhead of the needed additions in WebAssembly will be at some point smaller than the inefficiency of a textual file \cite{wasm:allocator, rust:wasmfilesize}.
+
+\subsubsection{Multihreaded Markdown-Parser}
+The second benchmark portrays a mor real-word example with the inclusion of multithreading, in other words parallel processing. The task is simple, a \gls{markdown}-file should be parsed to a native HTML-output. To achieve higher performance, the file is split already split in three parts that can be individually converted and then concatenated together at the end.
+
+At the moment WebAssembly features no native thread implementation. There is already a proposal and some early implementation, but further developed slowed down since the discovery of Meltdown and Spectre \cite[cf.][]{wasm:threads}. Nonetheless, WebAssembly can achieve parallel processing in the same manner as Javascript: Web Workers. A Web Worker is an object that runs a JavaScript-file (and WebAssembly) in a distinct thread. 
+
+TODO
+
+\begin{listing}
+\noindent
+\begin{minipage}[t]{0.45\textwidth}
+\begin{code}[]{rust}
+use comrak::{markdown_to_html, ComrakOptions};
+
+...
+let mut options = ComrakOptions::default();
+options.unsafe_ = true;
+markdown_to_html(&text, &options)
+...
+\end{code}
+\end{minipage}
+\hspace{1cm}
+\begin{minipage}[t]{0.45\textwidth}
+\begin{code}[]{javascript}
+import('./bower_components/showdown/dist/showdown.js').then(showdown => {
+    ...
+    const converter = new showdown.Converter();
+    converter.setFlavor('github');
+    const html = converter.makeHtml(text);
+    ...
+}
+\end{code}
+\end{minipage}
+\caption{Markdown-Parser source code - Rust/Wasm - JS}
+\label{lst:wasm-code}
+\end{listing}
+
+\begin{listing}
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    height=8cm, width=14.5cm,
+    bar width=0.6cm,
+    enlargelimits=0.15,
+    legend style={at={(0.5,-0.15)},
+      anchor=north,legend columns=-1},
+    ylabel={execution time in ms},
+    symbolic x coords={Rust,Wasm (Chrome),Wasm (Firefox), JS (Chrome), JS (Firefox)},
+    xtick=data,
+    nodes near coords,
+    nodes near coords align={vertical},
+    ]
+\addplot coordinates {(Rust,6.4) (Wasm (Chrome),21.0) (Wasm (Firefox),47.6) (JS (Chrome),42.5) (JS (Firefox), 77.5)};
+\addplot coordinates {(Rust,8.4) (Wasm (Chrome),27.3) (Wasm (Firefox),130.0) (JS (Chrome),51.7) (JS (Firefox),135.0)};
+\addplot coordinates {(Rust,4.9) (Wasm (Chrome),11.6) (Wasm (Firefox),15.0) (JS (Chrome),19.6) (JS (Firefox), 27.0)};
+\legend{Average,Maximum,Minimum}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\caption{Multihreaded Markdown-Parser Benchmark}
+\label{lst:markdown-benchmark}
+\end{listing}
 
 \section{Conclusion}
+
+TODO
 
 \subsection{Future Outlook}
 wasi?
 
 
+%\makefig{images/logo-right.png}{height=2cm}{
+%    Mit Beschreibung und Label  % (Optional)
+%}{
+%    fig:caption-label           % (Optional)
+%}
 
 
-\section{Kommandos}\label{sec:Kommandos}
-\subsection{\texttt makefig}
-
-\begin{listing}
-\begin{code}{tex}
-\makefig{images/logo-right.png}{height=2cm}{
-    Mit Beschreibung und Label  % (Optional)
-}{
-    fig:caption-label           % (Optional)
-}
-\end{code}
-\caption{\texttt makefig}
-\label{lst:makefig}
-\end{listing}
-\makefig{images/logo-right.png}{height=2cm}{Mit Beschreibung und Label}{fig:caption-label}
-
-\subsection{\texttt vardef}
-\begin{listing}
-\begin{code}{tex}
-$$e^{i*\pi} = -1$$
-\end{code}
-
-$$e^{i*\pi} = -1$$
-
-\begin{code}[firstnumber=last]{tex}
-\begin{vardef}
-    \addvardef{$e$}{Eulersche Zahl}
-    \addvardef{$\pi$}{Kreiszahl}
-    \addvardef{$i$}{Imagin\"are Einheit}
-\end{vardef}
-\end{code}
-
-\begin{vardef}
-    \addvardef{$e$}{Eulersche Zahl}
-    \addvardef{$\pi$}{Kreiszahl}
-    \addvardef{$i$}{Imaginäre Einheit}
-\end{vardef}
-
-\caption{\texttt vardef}
-\label{lst:vardef}
-\end{listing}
-
-\newpage
-\section{Anwendung}\label{sec:Anwendung}
-Hier sollen die Schritte der Laborübung erläutert werden. Hier sind alle Fragestellungen der Lehrkraft zu beantworten. Etwaige Probleme bzw. Schwierigkeiten sollten ebenfalls hier angeführt werden.
-
-In diesem Fall werden einige \LaTeX-Elemente dokumentiert, welche bei der Kreation von Protokollen behilflich sein könnten.
-
-\subsection{Tabellen}
-\begin{table}[H]
-	\center
-	\begin{tabular}{| c | l |}
-		\hline Header 	& Kopf\\ \hline\hline
-		\textbf{Lorem} 	& Ipsum dolor sit amet, consetetur sadipscing elitr\\ \hline
-		\textbf{Ipsum} 	& At vero eos et accusam et justo duo dolores et ea rebum.\\
-						& Stet clita kasd gubergren, no sea takimata sanctus\\ \hline
-		\textbf{Dolor} 	& Consetetur sadipscing elitr, sed diam nonumy\\\hline
-	\end{tabular}
-	\caption{Tabular}
-	\label{tab:tabular}
-\end{table}
-
-\subsubsection{TabularX}
-TabularX erlaubt die Angabe der Größe der Tabelle und bietet zudem den Reihentyp \texttt{X}, der die verbleibende Größe neben anderen Reihen mit anderen \texttt{X} Reihen teilt.
-\\\\
-ACHTUNG: Die Verwendung von \verb|\codein|, \verb|\mintinline| oder \verb|\lstinline| ist in einer TabularX Umgebung nicht möglich!
-\begin{table}
-    \center
-    \begin{tabularx}{\textwidth}{| c | X |}
-        \hline Header 	& Kopf\\ \hline\hline
-        \textbf{Lorem} 	& Ipsum dolor sit amet, consetetur sadipscing elitr\\ \hline
-        \textbf{Ipsum} 	& At vero eos et accusam et justo duo dolores et ea rebum.\\
-            			& Stet clita kasd gubergren, no sea takimata sanctus\\ \hline
-        \textbf{Dolor} 	& Consetetur sadipscing elitr, sed diam nonumy\\\hline
-    \end{tabularx}
-    \caption{TabularX}
-    \label{tab:tabularx}
-\end{table}
-
-\newpage
-\subsection{Aufzählung}
-\begin{itemize}
-	\item Element einer Aufzählung
-	\begin{itemize}
-        \item Erstes eingerücktes Element einer Aufzählung
-        \item Zweites eingerücktes Element einer Aufzählung
-    \end{itemize}
-\end{itemize}
-
-\subsubsection{Outlines}
-\begin{outline}
-    \1 Element einer Aufzählung
-        \2 Erstes eingerücktes Element einer Aufzählung
-        \2 Zweites eingerücktes Element einer Aufzählung
-\end{outline}
-
-Im Dokument selbst kann ein Akronym mittels \verb|\gls{ac-syt}| verwendet werden. Beachte, dass ein Akronym welches bereits im Dokument verwendet wurde, bei der ersten Verwendung ausgeschrieben und danach immer gekürzt wird.
-\\\\
-Mit \verb|\gls{syt}| kann zum Beispiel eine Referenz zur Definition von \gls{syt} hinzugefügt werden.
-
-\subsection{Zitate}
-Zitate sollten gesammelt in der Datei \texttt{bib.bib} verwaltet werden.
-
-\newpage
-\subsection{Quelltext}
-\begin{listing}
-\ifminted   \mint{tex}|\begin{code}[]{java}|    % Escape \ for lstlistings
-\else       \lstinline[numbers=left, language=tex]$\begin{code}[]{java}$\fi
-\begin{code}[firstnumber=last]{java}
-// Ich bin ein Kommantar!
-public static void main(String[] args) {
-    System.out.println("Ich bin ein Array!")
-}
-\end{code}
-\ifminted   \mint[firstnumber=last]{tex}|\end{code}|    % Escape \ for lstlistings
-\else       \lstinline[firstnumber=last, numbers=left, language=tex]$\end{code}$\fi
-
-\caption{Java Code}
-\label{lst:java-code}
-\end{listing}
-~\\
-Die Darstellung von Quelltext im Text ist über das Kommando \verb|\codein[options]{lang}{code}| möglich.
-
-\subsubsection{Listings}
-\begin{listing}
-\ifminted   \mint{tex}|\begin{lstlisting}[language=Java, caption=Java Lstlisting]|
-\else       \lstinline[numbers=left, language=tex]$\begin{lstlisting}[language=Java, caption=Java Lstlisting]$\fi
-\begin{code}[firstnumber=last]{java}
-// Ich bin ein Kommantar!
-public static void main(String[] args) {
-    System.out.println("Ich bin ein Array!")
-}
-\end{code}
-\ifminted   \mint[firstnumber=last]{tex}|\end{lstlisting}|
-\else       \lstinline[firstnumber=last, numbers=left, language=tex]$\end{lstlisting}$\fi
-\caption{Java Lstlisting}
-\label{lst:java-lstlisting}
-\end{listing}
-
-\newpage
-\subsubsection{Minted}
-Benötigt die Option \texttt{minted}.
-\paragraph{Umgebung}~\\
-\begin{listing}
-\ifminted   \mint{tex}|\begin{minted}[options]{java}|
-\else       \lstinline[numbers=left, language=tex]$\begin{minted}[]{java}$\fi
-\begin{code}[firstnumber=last]{java}
-// Ich bin ein Kommantar!
-public static void main(String[] args) {
-    System.out.println("Ich bin ein Array!")
-}
-\end{code}
-\ifminted   \mint[firstnumber=last]{tex}|\end{minted}|
-\else       \lstinline[firstnumber=last, numbers=left, language=tex]$\end{minted}$\fi
-\caption{Minted Umgebung}
-\label{lst:minted-env}
-\end{listing}
-
-\paragraph{Zeile}~\\
-\begin{listing}
-\ifminted   \mint{tex}$\mint[options]{lang}|code|$
-\else       \lstinline[language=tex]$\mint[options]{lang}|code|$\fi
-\caption{Minted Einzeiler}
-\label{lst:minted-line}
-\end{listing}
-
-\begin{listing}
-\begin{code}{tex}
-\mintinline[options]{lang}{code}
-\end{code}
-\caption{Minted Inline}
-\label{lst:minted-inline}
-\end{listing}
