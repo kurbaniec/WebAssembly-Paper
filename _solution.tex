@@ -256,11 +256,13 @@ WebAssembly as a binary format should be smaller than a JavaScript file in theor
 This stark differences can be explained by the fact that is is not a true one-to-one comparison. The JavaScript file features only the algorithm with no additional code. The WebAssembly module features the algorithm with needed additions like a memory allocator (examples use the smallest one possible called \textit{wee\_alloc}) that are needed for execution. The Rust executable features the algorithm, the main-test program and full bindings for the targeted host machine. Also, a fully fledged memory allocator is included. But most of the time resources are shared compressed over the internet. With the compress utility \textit{gzip} we can determine how large the files are when transferred efficiently. WebAssembly's binary format is perfect for compression, we can reduce the size to one third of the original one. JavaScript's textual files do not benefit greatly from compression and are only reduced slightly. Therefore, it can be expected that a long algorithm or algorithms will probably be smaller in WebAssembly than JavaScript. The overhead of the needed additions in WebAssembly will be at some point smaller than the inefficiency of a textual file \cite{wasm:allocator, rust:wasmfilesize}.
 
 \subsubsection{Multihreaded Markdown-Parser}
-The second benchmark portrays a mor real-word example with the inclusion of multithreading, in other words parallel processing. The task is simple, a \gls{markdown}-file should be parsed to a native HTML-output. To achieve higher performance, the file is split already split in three parts that can be individually converted and then concatenated together at the end.
+The second benchmark portrays a mor real-word example with the inclusion of multithreading, in other words parallel processing. The task is simple, a \gls{markdown}-file should be parsed to a native HTML-output. To achieve higher performance, the file is already split in three parts that can be individually converted and then concatenated together at the end.
 
-At the moment WebAssembly features no native thread implementation. There is already a proposal and some early implementation, but further developed slowed down since the discovery of Meltdown and Spectre \cite[cf.][]{wasm:threads}. Nonetheless, WebAssembly can achieve parallel processing in the same manner as Javascript: Web Workers. A Web Worker is an object that runs a JavaScript-file (and WebAssembly) in a distinct thread. 
+At the moment WebAssembly features no native thread implementation. There is already a proposal and some early implementations, but further developed slowed down since the discovery of Meltdown and Spectre \cite[cf.][]{wasm:threads}. Nonetheless, WebAssembly can achieve parallel processing in the same manner as Javascript: Web Workers. A Web Worker is an object that runs a JavaScript-file (and WebAssembly) in a distinct thread. 
 
-TODO
+For Markdown-parsing the framework \href{https://github.com/kivikakk/comrak}{Comrak} is used for the Rust and WebAssembly implementation, the framework \href{https://github.com/showdownjs/showdown}{Showdown} is used for the JavaScript version.
+
+The following shows the source code for parsing used in threads.
 
 \begin{listing}
 \noindent
@@ -291,6 +293,8 @@ import('./bower_components/showdown/dist/showdown.js').then(showdown => {
 \label{lst:wasm-code}
 \end{listing}
 
+For testing, the same criteria from the Fibonacci benchmark are used. 
+
 \begin{listing}
 \begin{center}
 \begin{tikzpicture}
@@ -318,12 +322,18 @@ import('./bower_components/showdown/dist/showdown.js').then(showdown => {
 \label{lst:markdown-benchmark}
 \end{listing}
 
-\section{Conclusion}
+The results are quite varying. The JavaScript version tested in Chrome performs as fast as the WebAssembly version in Firefox. WebAssembly in Firefox is more than 50 percent slower than WebAssembly in Chrome. Similar results are seen by comparing the JavaScript version in the two browser. Also all benchmarks tested with Firefox show inconsistent readings. Because the WebAssemby and JavaScript version share this behaviour, it can be assumed that this spikes are related to the Web Worker implementation in the Firefox engine. Nonetheless, the WebAssembly implementation always outperforms their JavaScript counterpart. But no web-based version comes close to the performance of the Rust based native application. 
 
-TODO
+\newpage
+
+\section{Conclusion}
+WebAssembly as backed by the benchmarks can improve performance in web-based applications. The format is perfect for usage in heavy computational tasks like gaming, video editing or encryption, where it  outperforms JavaScript by a margin. 
+The format is also perfect for code reuse. If you already have high performance code written in Rust or C++, it can be easily ported to WebAssembly. This idea can be taken further by porting full native applications to WebAssembly to use them on the web. 
+
+As stated in the introduction many applications today are designed first as web applications and later ported to different target systems. Most of this applications when ported to native code suffer from poor performance because of their JavaScript-based origin. With WebAssembly the performance loss can be somewhat compensated, leading to performance more in common with native applications. Good overall performance is a key requirement to create applications with the ``write ones, run anywhere'' approach. WebAssembly can help to achieve this goal.
 
 \subsection{Future Outlook}
-wasi?
+There are currently efforts to push WebAssembly outside of browsers with a WebAssembly System Interface (WASI). The idea is to run WebAssembly modules naively on the host machine because WebAssembly features a fast and secure design with great cross compatibility, which is the main reasoning of the project. It will be interesting to see how WebAssembly evolves in the future \cite{wasi}.
 
 
 %\makefig{images/logo-right.png}{height=2cm}{
